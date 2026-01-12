@@ -2,9 +2,25 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Schedule } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Safety check for API key to prevent crashes during initialization
+const getApiKey = () => {
+  try {
+    return process.env.API_KEY || '';
+  } catch (e) {
+    return '';
+  }
+};
 
 export const getDailyReminder = async (schedules: Schedule[]): Promise<{ message: string; suggestions: string[] }> => {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    return {
+      message: "Welcome back! Add your tasks for today to get personalized AI coaching.",
+      suggestions: ["Set your first goal", "Stay productive"]
+    };
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   const today = new Date().toLocaleDateString();
   const todaySchedules = schedules.filter(s => new Date(s.date).toLocaleDateString() === today);
   
